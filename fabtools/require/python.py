@@ -12,6 +12,7 @@ and installing packages using `pip`_.
 import posixpath
 
 from fabric.api import run, sudo
+from fabric.contrib.files import append
 
 from fabtools.files import is_file
 from fabtools.python import (
@@ -26,6 +27,7 @@ from fabtools.python_distribute import (
     is_distribute_installed,
 )
 from fabtools.system import distrib_family
+from fabtools.user import home_directory
 
 
 DEFAULT_PIP_VERSION = '1.3.1'
@@ -145,3 +147,42 @@ def virtualenv(directory, system_site_packages=False, python=None,
             sudo(command, user=user)
         else:
             run(command)
+
+
+def virtualenvwrapper(directory, use_sudo=False, user=None):
+    """
+    Require `virtualenvwrapper`_ and set your virtualenv home directory.
+
+    ::
+
+        from fabtools import require
+
+        require.python.virtualenvwrapper('/path/to/venv_home')
+
+    As the directory will be exported in the user .profile, you can use other
+    environment variables such as '$HOME'
+
+    Once virtualenv are created in the `venv_home` directory, you can activate
+    and cd to then using the virtualenvwrapper `workon` command.
+
+    ::
+
+        from fabric.context_managers import prefix
+
+        with prefix('workon venv'):
+            run('./manage.py syncdb')
+
+    .. _virtual environment: http://www.virtualenv.org/
+    .. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.org/
+    """
+    package('virtualenv', 'virtualenvwrapper', use_sudo=True)
+
+    profile_conf = '%s.profile' % (home_directory(user) + '/' if user else '')
+
+    append(profile_conf, 'export WORKON_HOME=%s' % directory, use_sudo=use_sudo)
+    append(profile_conf, 'source /usr/local/bin/virtualenvwrapper.sh',
+           use_sudo=use_sudo)
+
+    # Source the user .profile for creating the directory
+    if user:
+        sudo('source %s' % profile_conf, user=user)

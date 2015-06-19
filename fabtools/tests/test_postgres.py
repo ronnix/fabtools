@@ -58,7 +58,7 @@ class TestPostgresCreateUser(unittest.TestCase):
         from fabtools import postgres
         postgres.create_user('foo', 'bar')
         expected = (
-            'psql -c "CREATE USER foo NOSUPERUSER NOCREATEDB NOCREATEROLE '
+            'psql -c "CREATE USER \\\\"foo\\\\" NOSUPERUSER NOCREATEDB NOCREATEROLE '
             'INHERIT LOGIN UNENCRYPTED PASSWORD \'bar\';"')
         self.assertEqual(expected, _run_as_pg.call_args[0][0])
 
@@ -67,7 +67,7 @@ class TestPostgresCreateUser(unittest.TestCase):
         from fabtools import postgres
         postgres.create_user('foo', 'bar', connection_limit=-1)
         expected = (
-            'psql -c "CREATE USER foo NOSUPERUSER NOCREATEDB NOCREATEROLE '
+            'psql -c "CREATE USER \\\\"foo\\\\" NOSUPERUSER NOCREATEDB NOCREATEROLE '
             'INHERIT LOGIN CONNECTION LIMIT -1 UNENCRYPTED PASSWORD \'bar\';"')
         self.assertEqual(expected, _run_as_pg.call_args[0][0])
 
@@ -78,7 +78,7 @@ class TestPostgresCreateUser(unittest.TestCase):
                              createrole=True, inherit=False, login=False,
                              connection_limit=20, encrypted_password=True)
         expected = (
-            'psql -c "CREATE USER foo SUPERUSER CREATEDB CREATEROLE '
+            'psql -c "CREATE USER \\\\"foo\\\\" SUPERUSER CREATEDB CREATEROLE '
             'NOINHERIT NOLOGIN CONNECTION LIMIT 20 '
             'ENCRYPTED PASSWORD \'bar\';"')
         self.assertEqual(expected, _run_as_pg.call_args[0][0])
